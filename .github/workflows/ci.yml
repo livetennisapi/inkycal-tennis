@@ -1,0 +1,27 @@
+name: tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.11", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install Inkycal (editable, so packaged fonts are available)
+        run: |
+          git clone --depth 1 https://github.com/aceinnolab/Inkycal /tmp/Inkycal
+          pip install -e /tmp/Inkycal
+          pip install pytest
+      - name: Run tests (API fully mocked, no key needed)
+        run: pytest tests/ -v
+      - name: Render preview from mocked data
+        run: python tests/render_preview.py
